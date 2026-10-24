@@ -68,7 +68,7 @@ keeps generated files owned by your user.
 Use this one-liner for both the first build and subsequent builds:
 
 ```sh
-docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/workspaces/macropad:z" -w /workspaces/macropad/.local-build zmkfirmware/zmk-dev-arm:3.5 west build -p always -s zmk/app -d build/macropad -b seeeduino_xiao_ble -- -DZMK_CONFIG=/workspaces/macropad/config -DZMK_EXTRA_MODULES=/workspaces/macropad -DSHIELD=macropad
+docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/workspaces/macropad:z" -w /workspaces/macropad/.local-build zmkfirmware/zmk-dev-arm:3.5 bash -c 'west zephyr-export && west build -p always -s zmk/app -d build/macropad -b seeeduino_xiao_ble -S studio-rpc-usb-uart -- -DZMK_CONFIG=/workspaces/macropad/config -DZMK_EXTRA_MODULES=/workspaces/macropad -DSHIELD=macropad'
 ```
 
 `-p always` performs a pristine rebuild so configuration changes are applied
@@ -78,9 +78,42 @@ reliably. The firmware is written to:
 .local-build/build/macropad/zephyr/zmk.uf2
 ```
 
+Zephyr is exported in the same container as the build because the package
+registration in its temporary home does not persist between containers.
+The `studio-rpc-usb-uart` snippet enables USB communication with ZMK Studio.
+
 If `config/west.yml` changes, copy it into `.local-build/config/west.yml`
 again and run `west update` inside the same container environment before
 rebuilding. The manifest copy does not update automatically.
+
+## ZMK Studio
+
+Studio support is enabled in `boards/shields/macropad/macropad.conf`.
+Both the local build command above and GitHub Actions include the USB Studio
+snippet. Flash the Studio-enabled firmware once; subsequent supported keymap
+edits can be made without rebuilding or reflashing.
+
+1. Connect the macropad over a USB data cable.
+2. Open [ZMK Studio](https://zmk.studio/) in Chrome/Chromium, or use the
+   [native Linux app](https://zmk.studio/download), and connect to the macropad.
+3. Press the **top-left and bottom-right keys together** to unlock editing.
+   Their presses must be within 50 ms of each other. The combo consumes their
+   normal actions; pressing either key alone still sends its assigned keycode.
+4. Edit the keymap and save changes to the device.
+
+Studio locks editing again when disconnected or after its inactivity timeout.
+The unlock combo uses physical positions 0 and 8, so it remains available
+after remapping those keys in Studio.
+
+On Linux, USB Studio access requires permission to open the device's serial
+port. If access is denied, check the port's ownership and Fedora's serial
+device access configuration rather than running the browser as root.
+
+Studio-saved keymaps persist across restarts and take precedence over the
+compiled default keymap. Use **Restore Stock Settings** in Studio to return
+to the firmware defaults (this discards Studio keymap edits).
+Studio can assign available behaviors, but new custom behavior definitions,
+combos, and physical layouts still require firmware changes.
 
 ## Deep sleep
 
