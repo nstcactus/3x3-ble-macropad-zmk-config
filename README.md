@@ -94,15 +94,15 @@ Press and release any key to wake the macropad, then allow a few seconds for
 BLE to reconnect before sending the intended command. The wake-up press may
 not reach the host, but should not be assumed to be discarded every time.
 
-## Initial test keymap
+## Default keymap
 
 Viewed from the key side:
 
 ```text
-1 2 3
-4 5 6
-7 8 9
+F13 F14 F15
+F16 F17 F18
+F19 F20 F21
 ```
 
-These bindings send number-row keycodes, not numeric-keypad keycodes.
-The resulting characters depend on the host keyboard layout.
+These bindings send function-key keycodes F13 through F21 for assignment
+in the host application.
