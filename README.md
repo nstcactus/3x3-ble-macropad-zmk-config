@@ -82,6 +82,18 @@ If `config/west.yml` changes, copy it into `.local-build/config/west.yml`
 again and run `west update` inside the same container environment before
 rebuilding. The manifest copy does not update automatically.
 
+## Deep sleep
+
+On battery power, the macropad enters deep sleep after **five minutes without
+key activity**, disconnecting BLE to reduce power consumption. Each key press
+or release restarts the inactivity timer, keeping it awake during bursts of use.
+Automatic deep sleep is disabled while USB power is present, including when
+powered by a USB wall adapter.
+
+Press and release any key to wake the macropad, then allow a few seconds for
+BLE to reconnect before sending the intended command. The wake-up press may
+not reach the host, but should not be assumed to be discarded every time.
+
 ## Initial test keymap
 
 Viewed from the key side:
