@@ -78,32 +78,22 @@ reliably. The firmware is written to:
 .local-build/build/macropad/zephyr/zmk.uf2
 ```
 
-Zephyr is exported in the same container as the build because the package
-registration in its temporary home does not persist between containers.
-The `studio-rpc-usb-uart` snippet enables USB communication with ZMK Studio.
-
 If `config/west.yml` changes, copy it into `.local-build/config/west.yml`
 again and run `west update` inside the same container environment before
 rebuilding. The manifest copy does not update automatically.
 
 ## ZMK Studio
 
-Studio support is enabled in `boards/shields/macropad/macropad.conf`.
-Both the local build command above and GitHub Actions include the USB Studio
-snippet. Flash the Studio-enabled firmware once; subsequent supported keymap
-edits can be made without rebuilding or reflashing.
-
 1. Connect the macropad over a USB data cable.
 2. Open [ZMK Studio](https://zmk.studio/) in Chrome/Chromium, or use the
    [native Linux app](https://zmk.studio/download), and connect to the macropad.
 3. Press the **top-left and bottom-right keys together** to unlock editing.
-   Their presses must be within 50 ms of each other. The combo consumes their
-   normal actions; pressing either key alone still sends its assigned keycode.
+   Press them simultaneously; pressing either key alone still sends its
+   assigned action.
 4. Edit the keymap and save changes to the device.
 
 Studio locks editing again when disconnected or after its inactivity timeout.
-The unlock combo uses physical positions 0 and 8, so it remains available
-after remapping those keys in Studio.
+The unlock gesture remains available after remapping those keys in Studio.
 
 On Linux, USB Studio access requires permission to open the device's serial
 port. If access is denied, check the port's ownership and Fedora's serial
@@ -112,8 +102,46 @@ device access configuration rather than running the browser as root.
 Studio-saved keymaps persist across restarts and take precedence over the
 compiled default keymap. Use **Restore Stock Settings** in Studio to return
 to the firmware defaults (this discards Studio keymap edits).
-Studio can assign available behaviors, but new custom behavior definitions,
-combos, and physical layouts still require firmware changes.
+
+## Bluetooth devices
+
+The macropad provides three device slots, numbered **0, 1, and 2**.
+Each slot remembers one paired phone or computer. Disconnecting a device
+does not free its slot.
+
+### Select a device
+
+1. Press all **three middle-row keys together**, then release them promptly.
+2. Within two seconds, press a key on the **top row**:
+
+   ```text
+   Left: slot 0    Middle: slot 1    Right: slot 2
+   ```
+
+Selecting a slot returns immediately to normal controls. A remembered device
+can reconnect; an empty slot is available for pairing through the phone or
+computer's Bluetooth settings.
+
+Press any other individual key to cancel without sending its normal action,
+or wait two seconds to cancel automatically. There is no mode or slot indicator.
+
+### Forget the selected device
+
+Press all **three middle-row keys together** and **hold them for three seconds**.
+This works in normal controls as well as profile selection.
+Press the keys together rather than one after another. 
+
+This clears only the currently selected slot, making it available for pairing
+again. 
+
+> [!WARNING] 
+> Also remove the old Macropad pairing in that device's Bluetooth settings 
+
+Other slots are not affected.
+
+When connected to a computer by USB, keyboard input normally goes over USB
+even after selecting a Bluetooth slot. Disconnect USB to test wireless input.
+
 
 ## Deep sleep
 
